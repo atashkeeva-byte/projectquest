@@ -70,5 +70,42 @@ class Game:
                 self.player.take_item(item)
                 return
         print("Item not found")
-
-
+    def show_inventory(self) -> None:
+        if self.player.inventory:
+            print("Inventory:")
+            for item in self.player.inventory:
+                print(item)
+        else:
+            print("Inventory is empty")
+    def show_help(self) -> None:
+        print("Available commands:")
+        for direction in self.player.current_location.exits:
+            print(f"go {direction}")
+        for item in self.player.current_location.items:
+            print(f"take {item}")
+        print("look")
+        print("inventory")
+        print("help")
+    def process(self, command: str) -> None:
+        command = command.strip()
+        if command == "look":
+            self.look_around()
+        elif command == "inventory":
+            self.show_inventory()
+        elif command == "help":
+            self.show_help()
+        elif command.startswith("go "):
+            self.move_player(command[3:].strip())
+        elif command.startswith("take "):
+            self.take_item(command[5:].strip())
+        elif not command:
+            return
+        else:
+            print("Command not found")
+    def run_game(self) -> None:
+        while True:
+            command = input("> ")
+            self.process(command)
+            if command == "quit":
+                print("Game over")
+                break
