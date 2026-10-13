@@ -36,7 +36,39 @@ class Player:
         self.current_location.items.remove(item)
 
 class Game:
-    def __init__(self, locations: dict[str, Location], start_location: str) -> None:
+    def __init__(self, locations: dict[str, Location], start_location: str, player_name: str) -> None:
         self.locations = locations
         self.start_location = start_location
+        if start_location not in locations:
+            raise ValueError("Start location not found")
+        location = locations[start_location]
+        self.player = Player(player_name, location)
+    def move_player(self, direction: str) -> None:
+        if direction not in self.player.current_location.exits:
+            print("You can't go there")
+            return
+        destination_name = self.player.current_location.exits[direction]
+        self.player.current_location = self.locations[destination_name]
+    def look_around(self) -> None:
+        print(self.player.current_location.name)
+        print(self.player.current_location.description)
+        if self.player.current_location.items:
+            print("Items:")
+            for item in self.player.current_location.items:
+                print(item)
+        else:
+            print("No items")
+        if self.player.current_location.exits:
+            print("Exits:")
+            for direction, location_name in self.player.current_location.exits.items():
+                print(direction, location_name)
+        else:
+            print("No exits")
+    def take_item(self, item_name: str) -> None:
+        for item in self.player.current_location.items:
+            if item.name == item_name:
+                self.player.take_item(item)
+                return
+        print("Item not found")
+
 
