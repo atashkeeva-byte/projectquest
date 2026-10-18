@@ -1,5 +1,5 @@
 from saving import *
-
+from exceptions import SaveError, LoadError
 
 class Item:
     def __init__(self, name: str, description: str) -> None:
@@ -127,9 +127,15 @@ class Game:
         elif command == "quit":
             pass
         elif command == "save":
-            save_game(self)
+            try:
+                save_game(self)
+            except SaveError as error:
+                print(f"Not able to save: {error}")
         elif command == "load":
-            load_save(self)
+            try:
+                load_save(self)
+            except LoadError as error:
+                print(f"Not able to load: {error}")
         elif not command:
             return
         else:
