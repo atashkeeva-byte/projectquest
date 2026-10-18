@@ -7,20 +7,29 @@ class Item:
     def __repr__(self) -> str:
         return f"name: {self.name!r}, description: {self.description!r}"
 
+class Exit:
+    def __init__(self, destination: str, requires: str | None = None) -> None:
+        self.destination = destination
+        self.requires = requires
+    def __str__(self) -> str:
+        return self.destination
+    def __repr__(self) -> str:
+        return f"destination: {self.destination!r}, requires: {self.requires!r}"
+
 class Location:
     def __init__(self, name: str, description: str) -> None:
         self.name = name
         self.description = description
         self.items: list[Item] = []
-        self.exits: dict[str, str] = {}
+        self.exits: dict[str, Exit] = {}
     def __str__(self) -> str:
         return self.name
     def __repr__(self) -> str:
         return f"name: {self.name!r}, description: {self.description!r}, items: {self.items!r}, exits: {self.exits!r}"
     def add_item(self, item: Item) -> None:
         self.items.append(item)
-    def add_exit(self, direction: str, location_name: str) -> None:
-        self.exits[direction] = location_name
+    def add_exit(self, direction: str, destination: str, requires: str | None = None) -> None:
+        self.exits[direction] = Exit(destination, requires)
 
 class Player:
     def __init__(self, name: str, location: Location) -> None:
@@ -43,12 +52,20 @@ class Game:
             raise ValueError("Start location not found")
         location = locations[start_location]
         self.player = Player(player_name, location)
+
     def move_player(self, direction: str) -> None:
-        if direction not in self.player.current_location.exits:
+        current_location = self.player.current_location
+        if direction not in current_location.exits:
             print("You can't go there")
             return
-        destination_name = self.player.current_location.exits[direction]
-        self.player.current_location = self.locations[destination_name]
+        exit = current_location.exits[direction]
+        if exit.requires is not None:
+            has_item = any(item.name == exit.requires for item in self.player.inventory)
+            if not has_item:
+                print(f"The door is locked. You need: {exit.requires}")
+                return
+        self.player.current_location = self.locations[exit.destination]
+
     def look_around(self) -> None:
         print(self.player.current_location.name)
         print(self.player.current_location.description)
@@ -60,16 +77,18 @@ class Game:
             print("No items")
         if self.player.current_location.exits:
             print("Exits:")
-            for direction, location_name in self.player.current_location.exits.items():
-                print(direction, location_name)
+            for direction, exit in self.player.current_location.exits.items():
+                print(direction, exit.destination)
         else:
             print("No exits")
+
     def take_item(self, item_name: str) -> None:
         for item in self.player.current_location.items:
             if item.name == item_name:
                 self.player.take_item(item)
                 return
         print("Item not found")
+
     def show_inventory(self) -> None:
         if self.player.inventory:
             print("Inventory:")
@@ -77,6 +96,7 @@ class Game:
                 print(item)
         else:
             print("Inventory is empty")
+
     def show_help(self) -> None:
         print("Available commands:")
         for direction in self.player.current_location.exits:
@@ -86,6 +106,7 @@ class Game:
         print("look")
         print("inventory")
         print("help")
+
     def process(self, command: str) -> None:
         command = command.strip()
         if command == "look":
@@ -102,6 +123,7 @@ class Game:
             return
         else:
             print("Command not found")
+
     def run_game(self) -> None:
         while True:
             command = input("> ")
