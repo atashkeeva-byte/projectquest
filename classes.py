@@ -1,3 +1,6 @@
+from saving import *
+
+
 class Item:
     def __init__(self, name: str, description: str) -> None:
         self.name = name
@@ -106,6 +109,8 @@ class Game:
         print("look")
         print("inventory")
         print("help")
+        print("save")
+        print("load")
 
     def process(self, command: str) -> None:
         command = command.strip()
@@ -119,6 +124,12 @@ class Game:
             self.move_player(command[3:].strip())
         elif command.startswith("take "):
             self.take_item(command[5:].strip())
+        elif command == "quit":
+            pass
+        elif command == "save":
+            save_game(self)
+        elif command == "load":
+            load_save(self)
         elif not command:
             return
         else:
