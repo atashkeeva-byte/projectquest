@@ -9,6 +9,8 @@ class InvalidExitError(ScenarioError):
     """Invalid exit"""
 class InvalidItemError(ScenarioError):
     """Invalid item"""
+class InvalidRiddleError(ScenarioError):
+    """Invalid riddle"""
 
 class SaveError(Exception):
     """Save error"""

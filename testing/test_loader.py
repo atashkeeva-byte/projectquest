@@ -10,6 +10,7 @@ def make_scenario():
         "locations": {
             "Комната": {
                 "description": "Маленькая комната",
+                "riddle": None,
                 "exits": {
                     "север": {
                         "destination": "Коридор",
@@ -53,3 +54,16 @@ def test_missing_required_item():
     data["locations"]["Комната"]["exits"]["север"]["requires"] = "Золотой ключ"
     with pytest.raises(InvalidExitError):
         validate(data)
+
+def test_valid_riddle():
+    data = make_scenario()
+    data["locations"]["Комната"]["riddle"] = {
+        "type": "question",
+        "question": "Что светит ночью?",
+        "answer": "свет",
+        "reward": {
+            "name": "Карта",
+            "description": "Старая карта"
+        }
+    }
+    assert validate(data) is True

@@ -20,11 +20,13 @@ class Exit:
         return f"destination: {self.destination!r}, requires: {self.requires!r}"
 
 class Location:
-    def __init__(self, name: str, description: str) -> None:
+    def __init__(self, name: str, description: str, riddle: dict | None = None) -> None:
         self.name = name
         self.description = description
         self.items: list[Item] = []
         self.exits: dict[str, Exit] = {}
+        self.riddle = riddle
+        self.riddle_solved = False
     def __str__(self) -> str:
         return self.name
     def __repr__(self) -> str:
@@ -100,6 +102,27 @@ class Game:
         else:
             print("Inventory is empty")
 
+    def solve_riddle(self) -> None:
+        location = self.player.current_location
+        riddle = location.riddle
+        if riddle is None:
+            print("No riddle in here")
+            return
+        if location.riddle_solved:
+            print("You already solved the riddle")
+            return
+        print(riddle["question"])
+        answer = input("Your answer: ").strip().lower()
+        correct_answer = riddle["answer"].strip().lower()
+        if answer != correct_answer:
+            print("Wrong. Try again.")
+            return
+        reward_data = riddle.get("reward")
+        if reward_data:
+            reward = Item(reward_data["name"], reward_data["description"])
+            self.player.inventory.append(reward)
+            print(f"You got a {reward.name}")
+
     def show_help(self) -> None:
         print("Available commands:")
         for direction in self.player.current_location.exits:
@@ -124,6 +147,8 @@ class Game:
             self.move_player(command[3:].strip())
         elif command.startswith("take "):
             self.take_item(command[5:].strip())
+        elif command == "riddle":
+            self.solve_riddle()
         elif command == "quit":
             pass
         elif command == "save":

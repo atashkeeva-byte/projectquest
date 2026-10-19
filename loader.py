@@ -1,6 +1,6 @@
 import json
 from classes import Location, Item, Player
-from exceptions import ScenarioError, MissingStartError, InvalidLocationError, InvalidExitError, InvalidItemError
+from exceptions import ScenarioError, MissingStartError, InvalidLocationError, InvalidExitError, InvalidItemError, InvalidRiddleError
 
 
 def load(filename: str) -> dict|None:
@@ -86,6 +86,28 @@ def validate(data: dict) -> bool:
             item_names.add(item["name"])
             if not isinstance(item["description"], str):
                 raise InvalidItemError("Item description must be a string")
+
+        riddle = location_data.get("riddle")
+
+        if riddle is not None:
+            if not isinstance(riddle, dict):
+                raise InvalidRiddleError(f"Invalid riddle in {location_name}")
+            if riddle.get("type") not in ("question", "code"):
+                raise InvalidRiddleError(f"Invalid riddle type in {location_name}")
+            if not isinstance(riddle.get("question"), str) or not riddle["question"].strip():
+                raise InvalidRiddleError(f"Missing riddle question in {location_name}")
+            if not isinstance(riddle.get("answer"), str) or not riddle["answer"].strip():
+                raise InvalidRiddleError(f"Missing riddle answer in {location_name}")
+            reward = riddle.get("reward")
+
+            if reward is not None:
+                if not isinstance(reward, dict):
+                    raise InvalidRiddleError(f"Invalid reward in {location_name}")
+                if not isinstance(reward.get("name"), str) or not reward["name"].strip():
+                    raise InvalidRiddleError(f"Invalid reward name in {location_name}")
+                if not isinstance(reward.get("description"), str):
+                    raise InvalidRiddleError(f"Invalid reward description in {location_name}")
+
     for location_name, location_data in locations.items():
         for direction, exit_data in location_data["exits"].items():
             if isinstance(exit_data, dict):
@@ -97,7 +119,7 @@ def validate(data: dict) -> bool:
 def create_locations(data: dict) -> dict[str, Location]:
     locations = {}
     for location_name, location_data in data["locations"].items():
-        locations[location_name] = Location(location_name, location_data["description"])
+        locations[location_name] = Location(location_name, location_data["description"], location_data.get("riddle"))
     for location_name, location_data in data["locations"].items():
         location = locations[location_name]
         for direction, exit_data in location_data["exits"].items():
