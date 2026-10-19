@@ -92,7 +92,7 @@ def validate(data: dict) -> bool:
         if riddle is not None:
             if not isinstance(riddle, dict):
                 raise InvalidRiddleError(f"Invalid riddle in {location_name}")
-            if riddle.get("type") not in ("question", "code"):
+            if riddle.get("type") != "question":
                 raise InvalidRiddleError(f"Invalid riddle type in {location_name}")
             if not isinstance(riddle.get("question"), str) or not riddle["question"].strip():
                 raise InvalidRiddleError(f"Missing riddle question in {location_name}")

@@ -123,6 +123,13 @@ class Game:
             self.player.inventory.append(reward)
             print(f"You got a {reward.name}")
 
+    def inspect(self, item_name: str) -> None:
+        for item in self.player.inventory:
+            if item.name == item_name:
+                print(item.description)
+                return
+        print("Item not found")
+
     def show_help(self) -> None:
         print("Available commands:")
         for direction in self.player.current_location.exits:
@@ -149,6 +156,8 @@ class Game:
             self.take_item(command[5:].strip())
         elif command == "riddle":
             self.solve_riddle()
+        elif command.startswith("inspect "):
+            self.inspect(command[8:].strip())
         elif command == "quit":
             pass
         elif command == "save":
