@@ -99,6 +99,7 @@ def validate(data: dict) -> bool:
             if not isinstance(riddle.get("answer"), str) or not riddle["answer"].strip():
                 raise InvalidRiddleError(f"Missing riddle answer in {location_name}")
             reward = riddle.get("reward")
+            item_names.add(reward["name"])
 
             if reward is not None:
                 if not isinstance(reward, dict):

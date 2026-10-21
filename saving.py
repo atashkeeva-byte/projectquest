@@ -1,6 +1,6 @@
 import json
 from exceptions import SaveError, InvalidSaveError, LoadError, InvalidLoadError, InvalidLoadLocationError, InvalidLoadItemError, InvalidNameError
-
+from classes import Item
 
 def save_game(game, filename: str = "data/save.json") -> None:
     data = {
@@ -10,6 +10,11 @@ def save_game(game, filename: str = "data/save.json") -> None:
         "location_items": {
             location.name: [item.name for item in location.items] for location in game.locations.values()
         },
+        "riddles_solved": {
+            location.name: location.riddle_solved
+            for location in game.locations.values()
+            if location.riddle is not None
+        }
     }
     try:
         with open(filename, "w", encoding="utf-8") as file:
@@ -50,6 +55,15 @@ def load_save(game, filename: str = "data/save.json") -> bool:
     if not isinstance(data["location_items"], dict):
         raise InvalidLoadError("Location items must be an object")
 
+    riddles_solved = data.get("riddles_solved", {})
+    if not isinstance(riddles_solved, dict):
+        raise InvalidLoadError("Riddles solved must be an object")
+    for location_name, solved in riddles_solved.items():
+        if location_name not in game.locations:
+            raise InvalidLoadLocationError(f"Location not found: {location_name}")
+        if not isinstance(solved, bool):
+            raise InvalidLoadError("Invalid riddle state")
+
     if data["player_name"] != game.player.name:
         raise InvalidNameError("Wrong player name")
     for location_name in data["location_items"]:
@@ -59,6 +73,11 @@ def load_save(game, filename: str = "data/save.json") -> bool:
     all_items = {}
 
     for location in game.locations.values():
+        if location.riddle is not None:
+            reward_data = location.riddle.get("reward")
+            if reward_data:
+                reward = Item(reward_data["name"], reward_data["description"])
+                all_items[reward.name] = reward
         for item in location.items:
             all_items[item.name] = item
     for item_name in data["inventory"]:
@@ -84,6 +103,11 @@ def load_save(game, filename: str = "data/save.json") -> bool:
     for location_name, item_names in data["location_items"].items():
         for item_name in item_names:
             game.locations[location_name].items.append(all_items[item_name])
+
+    for location in game.locations.values():
+        location.riddle_solved = False
+    for location_name, solved in riddles_solved.items():
+        game.locations[location_name].riddle_solved = solved
 
     print("Game loaded")
     return True

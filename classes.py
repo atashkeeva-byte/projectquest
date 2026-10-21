@@ -1,4 +1,3 @@
-from saving import *
 from exceptions import SaveError, LoadError
 
 class Item:
@@ -117,6 +116,7 @@ class Game:
         if answer != correct_answer:
             print("Wrong. Try again.")
             return
+        location.riddle_solved = True
         reward_data = riddle.get("reward")
         if reward_data:
             reward = Item(reward_data["name"], reward_data["description"])
@@ -143,6 +143,7 @@ class Game:
         print("load")
 
     def process(self, command: str) -> None:
+        from saving import save_game, load_save
         command = command.strip()
         if command == "look":
             self.look_around()
